@@ -38,3 +38,11 @@ The "Acceleration Control" block is a sub-block that can be placed within a "Way
 
 - Parses user-defined acceleration settings for the robot arm.
 - Adjusts the robot arm's acceleration when reaching the waypoint.
+
+## Block: Gripper Control
+
+**Description:**
+The "Gripper Control" block is used within the "Move" or any other upper level block to specify gripper settings at a particular point in the linear path. This block allows users to control the robot arm's gripper, specifying actions such as opening, closing, or setting a specific gripper width. When executed as part of the "Linear Move" sequence, it performs the following actions:
+
+- Parses user-defined gripper settings, including options for opening, closing, or adjusting the gripper width.
+- Controls the robot arm's gripper based on the specified settings.
