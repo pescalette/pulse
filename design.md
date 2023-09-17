@@ -12,7 +12,7 @@ The "Move" block allows users to define a sequence of waypoints for the robot ar
 - Monitors and adjusts the robot arm's position in real-time to accurately follow the defined path.
 - Implements safety checks to prevent collisions and ensure safe execution.
 
-### Block: Waypoint
+## Block: Waypoint
 
 **Description:**
 The "Waypoint" block is used within the "Move" block to specify individual points along the path. Each waypoint is defined by its coordinates (X, Y, Z). When executed as part of the "Move" sequence, it performs the following actions:
@@ -23,7 +23,7 @@ The "Waypoint" block is used within the "Move" block to specify individual point
 - Monitors and adjusts the robot arm's position in real-time to reach the waypoint accurately.
 - Enforces safety checks to avoid collisions during movement.
 
-#### Block: Speed Control
+## Block: Speed Control
 
 **Description:**
 The "Speed Control" block is a sub-block that can be placed within a "Waypoint" block to specify the desired speed of the robot arm when moving from that waypoint. It allows users to control the speed of the arm's movement at a particular point in the path. When executed as part of the "Move" sequence, it performs the following actions:
@@ -31,7 +31,7 @@ The "Speed Control" block is a sub-block that can be placed within a "Waypoint" 
 - Parses user-defined speed settings for the robot arm.
 - Adjusts the robot arm's movement speed when  reaching the waypoint.
 
-#### Block: Acceleration Control
+## Block: Acceleration Control
 
 **Description:**
 The "Acceleration Control" block is a sub-block that can be placed within a "Waypoint" block to specify the desired acceleration of the robot arm when moving from that waypoint. It allows users to control the acceleration of the arm's movement at a particular point in the path. When executed as part of the "Move" sequence, it performs the following actions:
