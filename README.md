@@ -3,6 +3,10 @@
 **Author:**
 - Parker Escalette
 
+# TRY ME: 
+https://pescalette.github.io/pulse/src/index.html
+(For future use)
+
 ## Project Description
 
 Pulse is a project aimed at simplifying robot arm automation and enhancing human-machine interfaces (HMIs) through an open-source, block-based programming language. The mission is to make robot arm programming accessible to developers of all skill levels, enabling precise control for various industrial applications.
