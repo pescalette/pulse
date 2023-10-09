@@ -1,0 +1,2 @@
+## AI Usage 
+The main things I have used AI for is quick things that I know are one google search or documentation skim away. Typing my queries into chatgpt will usually result in a working code output that can be copypasted into my code because it has all of my code files in the context window already.

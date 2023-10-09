@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Blockly Project</title>
+    <script src="../lib/blockly/blockly_compressed.js"></script>
+    <script src="../lib/blockly/blocks_compressed.js"></script>
+    <script src="../lib/blockly/msg/en.js"></script>
+    <script src="../lib/blockly/python_compressed.js"></script>
+    <script src="custom_blocks.js"></script>
+</head>
+<body>
+    <div id="blocklyDiv" style="height: 640px; width: 1080px;"></div>
+    <div id="toolbox"></div>
+    <!-- Add a button for code generation -->
+    <button id="generateCodeButton" style="display: inline-block;">Generate Code</button>
+    <button id="saveCodeButton" style="display: inline-block;">Save Code</button>
+    <pre>
+        <code id="generated-code" cols="80" rows="20"></code>
+    </pre>
+    
+    <footer>
+        <p>Check out the <a href="https://github.com/pescalette/pulse" target="_blank">GitHub repository</a> for this project.</p>
+    </footer>
+
+</body>
+</html>
+
