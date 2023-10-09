@@ -3,9 +3,8 @@
 **Author:**
 - Parker Escalette
 
-# TRY ME: 
+## Try Me 
 https://pescalette.github.io/pulse/src/index.html
-(For future use)
 
 ## Project Description
 
