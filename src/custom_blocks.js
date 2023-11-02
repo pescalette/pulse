@@ -55,7 +55,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 .setCheck('motor_name')
                 .appendField('Motor Names:');
             this.appendStatementInput('MAIN_PROGRAM')
-                .setCheck(null)
+                .setCheck(['controls_repeat_custom', 'move'])
                 .appendField('Main Program');
             this.setColour(160); // You can set a custom color for your block
             this.setTooltip('Root block for the program');
