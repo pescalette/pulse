@@ -1,13 +1,25 @@
 # Pulse Robot Automation
 
-**Author:**
-- Parker Escalette
 
-## Try Me 
+## Try Me
 https://pescalette.github.io/pulse/src/index.html
 
-## Project Description
+## Installation
+- Clone the repository to have access to the sample worlds
 
+## Getting started
+**Dependencies:**
+- Download [Webots](https://cyberbotics.com/#download) to begin. (Make sure to add it to path)
+- Download the python requirements:
+```bash
+$  pip install -r requirements.txt
+```
+
+**Usage:**
+Start by dragging in an initialization block and create a routine by dragging in more blocks to be run on the selected arm.
+To begin using the created routine download the created python file into `pulse/webots/controllers/ARM_NAME/ARM_NAME.py`. Naming is important here, double check the arm selected in your init block is what you use to replace `ARM_NAME` with.
+
+## Project Description  
 Pulse is a project aimed at simplifying robot arm automation and enhancing human-machine interfaces (HMIs) through an open-source, block-based programming language. The mission is to make robot arm programming accessible to developers of all skill levels, enabling precise control for various industrial applications.
 
 **Motivation:**
@@ -22,3 +34,6 @@ Robot automation is becoming increasingly important in industries such as manufa
 ## Parsing, Interpretation, and Compilation
 
 Pulse relates to the topics of parsing, interpretation, and compilation in several ways. The language employs a block-based interface, which requires parsing user inputs to generate executable code. The interpretation phase involves translating these blocks into high-level instructions for robot arm control, motion planning, and safety checks. Finally, compilation involves generating the necessary code to execute on the robot arm's hardware.
+
+**Author:**
+Parker Escalette
