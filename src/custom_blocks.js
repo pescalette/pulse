@@ -50,10 +50,10 @@ document.addEventListener('DOMContentLoaded', function () {
     Blockly.Blocks['program_root'] = {
         init: function () {
             this.appendDummyInput()
-                .appendField('Initialization')
-            this.appendStatementInput('MOTORS')
-                .setCheck('motor_name')
-                .appendField('Motor Names:');
+                .appendField('Initialization:')
+                .appendField('Motor Name: ')
+                .appendField(new Blockly.FieldTextInput('motor_name'), 'MOTOR_NAME');
+            this.setOutput(true, 'motor_name');
             this.appendStatementInput('MAIN_PROGRAM')
                 .setCheck(['controls_repeat_custom', 'move'])
                 .appendField('Main Program');
@@ -186,16 +186,12 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     Blockly.Python['program_root'] = function (block) {
-        var motorCode = Blockly.Python.statementToCode(block, 'MOTORS');
-        var mainCode = Blockly.Python.statementToCode(block, 'MAIN_PROGRAM');
-        var code = motorCode + mainCode;
-        return code;
-    };
-
-    Blockly.Python['motor_name'] = function (block) {
         var motorName = block.getFieldValue('MOTOR_NAME');
         var pythonCode = `motor_${motorName} = robot.getMotor("${motorName}")\n`;
-        return pythonCode;
+        var motorCode = Blockly.Python.statementToCode(block, 'MOTORS');
+        var mainCode = Blockly.Python.statementToCode(block, 'MAIN_PROGRAM');
+        var code = pythonCode + motorCode + mainCode;
+        return code;
     };
 
     Blockly.Python['controls_repeat_custom'] = function (block) {
