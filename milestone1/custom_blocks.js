@@ -43,6 +43,16 @@ document.addEventListener('DOMContentLoaded', function () {
                         "type": "controls_repeat_custom"
                     },
                 ]
+            },
+            {
+                "kind": "category",
+                "name": "LED Control",
+                "contents": [
+                {
+                "kind": "block",
+                "type": "led_control"
+                }
+        ]
             }
         ]
     }
@@ -158,6 +168,32 @@ document.addEventListener('DOMContentLoaded', function () {
             this.setColour(80);
             this.setTooltip('Set acceleration and speed for the waypoint.');
         }
+    };
+
+    Blockly.Blocks['led_control'] = {
+        init: function () {
+            this.appendDummyInput()
+                .appendField("LED Control:")
+                .appendField(new Blockly.FieldDropdown([
+                    ["ON", "TRUE"], 
+                    ["OFF", "FALSE"]
+                ]), "STATE")
+                .appendField("Color")
+                .appendField(new Blockly.FieldColour("#ff0000"), "COLOR");
+            this.setPreviousStatement(true, null);
+            this.setNextStatement(true, null);
+            this.setColour(120);
+            this.setTooltip("Turn an LED on or off and set its color.");
+            this.setHelpUrl("");
+        }
+    };
+    
+    Blockly.Python['led_control'] = function (block) {
+        var state = block.getFieldValue('STATE') === 'TRUE' ? 'True' : 'False';
+        var color = block.getFieldValue('COLOR');
+        // Assuming a function setLED exists to control the LED
+        var pythonCode = `setLED(${state}, '${color}')\n`;
+        return pythonCode;
     };
 
 
