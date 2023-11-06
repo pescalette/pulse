@@ -111,6 +111,27 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     };
 
+    //edit written by Ori Garibi
+    //would be a good idea to give the option to rotate the robot
+    //in case a specific waypoint is unknown and they want to move freely
+    Blockly.Blocks['rotate'] = {
+        init: function () {
+            this.appendDummyInput()
+                .appendField("Rotate");
+            this.appendStatementInput('ROTATE')
+                .setCheck('degrees')
+                .appendField('Degrees:');
+            this.setPreviousStatement(true, "rotate");
+            this.setNextStatement(true, "rotate");
+            this.setColour(40);
+            this.setTooltip('Rotates the robot a certain degrees');
+        }
+    };
+
+
+
+
+
     Blockly.Blocks['waypoint'] = {
         init: function () {
             this.appendDummyInput()
