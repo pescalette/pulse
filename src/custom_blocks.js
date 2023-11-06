@@ -57,9 +57,9 @@ document.addEventListener('DOMContentLoaded', function () {
             this.appendStatementInput('MAIN_PROGRAM')
                 .setCheck(['controls_repeat_custom', 'move'])
                 .appendField('Main Program');
-            this.setColour(160); // You can set a custom color for your block
+            this.setColour(160);
             this.setTooltip('Root block for the program');
-            this.setHelpUrl(''); // Set the URL for documentation if needed
+            this.setHelpUrl('');
         }
     };
 
@@ -71,9 +71,9 @@ document.addEventListener('DOMContentLoaded', function () {
             this.setOutput(true, 'motor_name');
             this.setPreviousStatement(true, "motor_name");
             this.setNextStatement(true, "motor_name");
-            this.setColour(210); // You can set a custom color for this block
+            this.setColour(210); 
             this.setTooltip('Add a motor name');
-            this.setHelpUrl(''); // Set the URL for documentation if needed
+            this.setHelpUrl(''); 
         }
     };
 
@@ -86,7 +86,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 .appendField("times");
             this.appendStatementInput("DO")
                 .appendField("Do:")
-                .setCheck("move"); // Replace with your desired block type
+                .setCheck("move");
             this.setInputsInline(true);
             this.setPreviousStatement(true, ["controls_repeat_custom", "move"]);
             this.setNextStatement(true, ["controls_repeat_custom", "move"]);
