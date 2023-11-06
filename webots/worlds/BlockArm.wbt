@@ -7,8 +7,8 @@ EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/project
 WorldInfo {
 }
 Viewpoint {
-  orientation -0.0856111709547801 -0.3699698043762642 0.9250908448674326 5.793001146002487
-  position -2.303439073294066 0.878966860625591 1.051125954887157
+  orientation -0.12111579923805658 -0.11824427156770072 0.9855705228020725 4.673892738214509
+  position 0.03034751633950042 2.9245081735803176 0.9849771888259871
 }
 TexturedBackground {
 }
@@ -26,7 +26,7 @@ Robot {
         anchor 0 0 0.15
       }
       device [
-        DEF BaseMotor RotationalMotor {
+        RotationalMotor {
           name "base_motor"
           minPosition -3.14159
           maxPosition 3.14159
@@ -667,6 +667,7 @@ Robot {
       ]
     }
   ]
+  name "BlockArm"
   boundingObject USE Base
   physics Physics {
   }

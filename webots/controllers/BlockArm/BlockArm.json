@@ -1,0 +1,10 @@
+{
+    "motors": [
+      "base_motor",
+      "shoulder_motor",
+      "elbow_motor",
+      "forearm_motor",
+      "wrist_motor"
+    ],
+    "sensors": []
+  }
