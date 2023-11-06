@@ -7,12 +7,11 @@ https://pescalette.github.io/pulse/src/index.html
 ## Installation
 - Clone the repository to have access to the sample worlds
 
-## Getting started
 **Dependencies:**
 - Download [Webots](https://cyberbotics.com/#download) to begin. (Make sure to add it to path)
 - Download the python requirements:
 ```bash
-$  pip install -r requirements.txt
+$  pip  install  -r  requirements.txt
 ```
 
 **Usage:**
