@@ -1,52 +1,42 @@
 import ikpy
+import json
 from ikpy.chain import Chain
 from ikpy.link import OriginLink, URDFLink
 from ikpy.utils import geometry
 from controller import Robot
 
-
-
-robot=Robot()
-
+# Initialize the robot
+robot = Robot()
 
 # Load your URDF file
-urdf_path = 'arm1.urdf'
-my_chain = Chain.from_urdf_file(urdf_path)
-print(my_chain.links)
+urdf_path = 'BlockArm.urdf'
+mask = [False, True, True, False, True, False, True, False, True, False, False, True]
+my_chain = Chain.from_urdf_file(urdf_path, active_links_mask=mask)
 
-part_names = ("base_motor", "shoulder_motor", "elbow_motor", "forearm_motor", "wrist_motor")
+# Load the arm configuration from the JSON file
+f = open('BlockArm.json')
+config = json.load(f)
+f.close()
 
-for link_id in range(len(my_chain.links)):
+position_sensors = []
+for sensor_name in config['position_sensors']:
+    sensor = robot.getDevice(sensor_name)
+    sensor.enable(16)
+    position_sensors.append(sensor)
 
-    # This is the actual link object
-    link = my_chain.links[link_id]
-    
+current_joint_positions = [sensor.getValue() for sensor in position_sensors]
 
-    if link.name not in part_names:
-        print("Disabling {}".format(link.name))
-        my_chain.active_links_mask[link_id] = False
-        
-motors = []
-for part in part_names:
+# Define the desired new position in XYZ coordinates
+new_position = [1, 1, 1]  # Replace with the desired XYZ coordinates
 
-    motor = robot.getDevice(part)
-    # Make sure to account for any motors that
-    # require a different maximum velocity!
-    motor.setVelocity(1)
-        
-    # position_sensor = motor.getPositionSensor()
-    # position_sensor.enable(timestep)
-    motors.append(motor)
-        
-        
-print(motors)
-initial_position = [0,0,0,0] + [m.getPositionSensor().getValue() for m in motors] + [0,0,0,0]
+# Perform inverse kinematics to compute the joint angles for the desired new position
+new_joint_positions = my_chain.inverse_kinematics(new_position, initial_positions=current_joint_positions)
 
-target = [1,1,1,1]
-ikResults = my_chain.inverse_kinematics(target, initial_position=initial_position,  target_orientation = [0,0,1], orientation_mode="Y")
+# Set the new joint positions
+for i, new_joint_angle in enumerate(new_joint_positions):
+    position_sensors[i].setPosition(new_joint_angle)
 
-for res in range(len(ikResults)):
-    # This if check will ignore anything that isn't controllable
-    if my_chain.links[res].name in part_names:
-        robot.getDevice(my_chain.links[res].name).setPosition(ikResults[res])
-        print("Setting {} to {}".format(my_chain.links[res].name, ikResults[res]))
+# Wait for the robot to reach the new joint positions (optional)
+robot.step()
+
+# Here, the robot arm is in the desired new position

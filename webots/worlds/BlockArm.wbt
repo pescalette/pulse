@@ -26,6 +26,9 @@ Robot {
         anchor 0 0 0.15
       }
       device [
+        PositionSensor {
+          name "base_motor_ps"
+        }
         RotationalMotor {
           name "base_motor"
           minPosition -3.14159
@@ -40,6 +43,9 @@ Robot {
               anchor 0.05 0 0
             }
             device [
+              PositionSensor {
+                name "shoulder_motor_ps"
+              }
               RotationalMotor {
                 name "shoulder_motor"
                 minPosition -3.14159
@@ -58,6 +64,9 @@ Robot {
                         anchor -0.03 0 0.125
                       }
                       device [
+                        PositionSensor {
+                          name "elbow_motor_ps"
+                        }
                         RotationalMotor {
                           name "elbow_motor"
                           minPosition -3.14159
@@ -76,6 +85,9 @@ Robot {
                                   anchor 0.03 0 0.075
                                 }
                                 device [
+                                  PositionSensor {
+                                    name "forearm_motor_ps"
+                                  }
                                   RotationalMotor {
                                     name "forearm_motor"
                                     minPosition -3.14159
@@ -95,6 +107,9 @@ Robot {
                                             anchor 0 0 0.08
                                           }
                                           device [
+                                            PositionSensor {
+                                              name "wrist_motor_ps"
+                                            }
                                             RotationalMotor {
                                               name "wrist_motor"
                                               minPosition -3.14159
@@ -339,7 +354,7 @@ Robot {
                                                         }
                                                         endPoint Solid {
                                                           translation -2.775557561562836e-17 -0.012699999999999632 0.06142000000000025
-                                                          rotation 0.9999999999999999 -2.891512433708683e-16 1.5218486493203714e-17 2.2957959999999122
+                                                          rotation 1 -2.8915124337086837e-16 1.5218486493203718e-17 2.2957959999999122
                                                           children [
                                                             DEF INNER_KNUCKLE Shape {
                                                               appearance USE BLACK_METAL
@@ -438,7 +453,7 @@ Robot {
                                                         ]
                                                         endPoint Solid {
                                                           translation -2.7755575615628248e-17 0.030601000000000184 0.054905000000000086
-                                                          rotation 4.063218387543446e-17 -0.911903298415477 -0.41040513439645665 3.1415923071795864
+                                                          rotation 4.0632183875434457e-17 -0.9119032984154769 -0.4104051343964566 3.1415923071795864
                                                           children [
                                                             USE OUTER_KNUCKLE
                                                             Solid {
@@ -508,7 +523,7 @@ Robot {
                                                         }
                                                         endPoint Solid {
                                                           translation 0 0.0127 0.06142
-                                                          rotation -1.23617481960065e-16 -0.911903298450497 -0.4104051343186438 3.141593
+                                                          rotation -1.23617481960065e-16 -0.9119032984504969 -0.4104051343186437 3.141593
                                                           children [
                                                             USE INNER_KNUCKLE
                                                             HingeJoint {

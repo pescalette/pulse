@@ -6,5 +6,11 @@
       "forearm_motor",
       "wrist_motor"
     ],
-    "sensors": []
+    "position_sensors": [
+        "base_motor_ps",
+        "shoulder_motor_ps",
+        "elbow_motor_ps",
+        "forearm_motor_ps",
+        "wrist_motor_ps"
+    ]
   }
