@@ -5,7 +5,7 @@
 https://pescalette.github.io/pulse/src/index.html
 
 ## Installation
-- Clone the repository to have access to the sample worlds
+- Clone the repository to have access to the sample world
 
 **Dependencies:**
 - Download [Webots](https://cyberbotics.com/#download) to begin. (Make sure to add it to path)
@@ -16,7 +16,7 @@ $  pip  install  -r  requirements.txt
 
 **Usage:**
 Start by dragging in an initialization block and create a routine by dragging in more blocks to be run on the selected arm.
-To begin using the created routine download the created python file into `pulse/webots/controllers/ARM_NAME/ARM_NAME.py`. Naming is important here, double check the arm selected in your init block is what you use to replace `ARM_NAME` with.
+To begin using the created routine download the created python file into `pulse/webots/controllers/ARM_NAME/ARM_NAME.py`. Naming is important here, double check the arm selected in your init block is what you use to replace `ARM_NAME` with (The default arm is named `BlockArm`. Ensure that the name you select within the initialization block matches.). Open `ARM_NAME.wbt` in webots and run the controller script to run the created routine.
 
 ## Project Description  
 Pulse is a project aimed at simplifying robot arm automation and enhancing human-machine interfaces (HMIs) through an open-source, block-based programming language. The mission is to make robot arm programming accessible to developers of all skill levels, enabling precise control for various industrial applications.

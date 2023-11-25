@@ -1,42 +1,51 @@
 import ikpy
 import json
 from ikpy.chain import Chain
-from ikpy.link import OriginLink, URDFLink
-from ikpy.utils import geometry
+import numpy as np
 from controller import Robot
 
-# Initialize the robot
 robot = Robot()
+timestep = int(robot.getBasicTimeStep())# Open arm config
+with open('BlockArm.json') as f:
+    config = json.load(f)
 
-# Load your URDF file
+# Create chain from URDF file and mask
 urdf_path = 'BlockArm.urdf'
-mask = [False, True, True, False, True, False, True, False, True, False, False, True]
-my_chain = Chain.from_urdf_file(urdf_path, active_links_mask=mask)
+active_links_mask = config['active_links_mask']
+my_chain = Chain.from_urdf_file(urdf_path, active_links_mask=active_links_mask)
 
-# Load the arm configuration from the JSON file
-f = open('BlockArm.json')
-config = json.load(f)
-f.close()
-
+# Initialize sensors and actuators lists
 position_sensors = []
+motors = []
+
+# Set up the sensors
 for sensor_name in config['position_sensors']:
     sensor = robot.getDevice(sensor_name)
-    sensor.enable(16)
+    sensor.enable(timestep)
     position_sensors.append(sensor)
 
+# Set up the motors
+for motor_name in config['motors']:
+    motor = robot.getDevice(motor_name)
+    motors.append(motor)
+
+# Get the current positions from the sensors
 current_joint_positions = [sensor.getValue() for sensor in position_sensors]
+waypoints = [{ 'coordinates': [0, 0, 0], }]
+for target_position in waypoints:
+    # Define the target position for the end-effector (x, y, z)
+    new_position = target_position['coordinates']
+    target_position = np.array(new_position)
 
-# Define the desired new position in XYZ coordinates
-new_position = [1, 1, 1]  # Replace with the desired XYZ coordinates
+    # Define an orientation for the end-effector (identity matrix assumuming no change in orientation)
+    target_orientation = np.eye(3)
 
-# Perform inverse kinematics to compute the joint angles for the desired new position
-new_joint_positions = my_chain.inverse_kinematics(new_position, initial_positions=current_joint_positions)
+    # Perform inverse kinematics to compute the joint angles for the desired new position and orientation
+    new_joint_positions = my_chain.inverse_kinematics(target_position=target_position, target_orientation=target_orientation)
 
-# Set the new joint positions
-for i, new_joint_angle in enumerate(new_joint_positions):
-    position_sensors[i].setPosition(new_joint_angle)
+    # Set the new joint positions on the motors
+    for idx, motor in enumerate(motors):
+        motor.setPosition(new_joint_positions[idx + 1])
 
-# Wait for the robot to reach the new joint positions (optional)
-robot.step()
-
-# Here, the robot arm is in the desired new position
+    # Step simulation to start moving the arm
+    robot.step(timestep)

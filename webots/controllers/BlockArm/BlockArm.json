@@ -12,5 +12,6 @@
         "elbow_motor_ps",
         "forearm_motor_ps",
         "wrist_motor_ps"
-    ]
+    ],
+    "active_links_mask": [false, true, true, false, true, false, true, false, true, false, false, true]
   }

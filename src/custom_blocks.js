@@ -14,10 +14,6 @@ document.addEventListener('DOMContentLoaded', function () {
                     },
                     {
                         "kind": "block",
-                        "type": "motor_name"
-                    },
-                    {
-                        "kind": "block",
                         "type": "move"
                     },
                     {
@@ -50,31 +46,16 @@ document.addEventListener('DOMContentLoaded', function () {
     Blockly.Blocks['program_root'] = {
         init: function () {
             this.appendDummyInput()
-                .appendField('Initialization')
-            this.appendStatementInput('MOTORS')
-                .setCheck('motor_name')
-                .appendField('Motor Names:');
+                .appendField('Start Here');
+            this.appendDummyInput()
+                .appendField('Robot Name:')
+                .appendField(new Blockly.FieldDropdown([["BlockArm", "BlockArm"]]), "ROBOT_NAME");
             this.appendStatementInput('MAIN_PROGRAM')
                 .setCheck(['controls_repeat_custom', 'move'])
                 .appendField('Main Program');
             this.setColour(160);
             this.setTooltip('Root block for the program');
-            this.setHelpUrl('');
-        }
-    };
-
-    Blockly.Blocks['motor_name'] = {
-        init: function () {
-            this.appendDummyInput()
-                .appendField('Motor Name:')
-                .appendField(new Blockly.FieldTextInput('motor_name'), 'MOTOR_NAME');
-            this.setOutput(true, 'motor_name');
-            this.setPreviousStatement(true, "motor_name");
-            this.setNextStatement(true, "motor_name");
-            this.setColour(210); 
-            this.setTooltip('Add a motor name');
-            this.setHelpUrl(''); 
-        }
+            this.setHelpUrl('');        }
     };
 
 
@@ -146,22 +127,16 @@ document.addEventListener('DOMContentLoaded', function () {
 
     Blockly.Blocks['waypoint_control'] = {
         init: function () {
-            this.appendDummyInput()
-                .appendField('Acceleration:')
-                .appendField(new Blockly.FieldNumber(0), 'ACCELERATION')
-                .setAlign(Blockly.ALIGN_RIGHT);
+
             this.appendDummyInput()
                 .appendField('Speed:')
                 .appendField(new Blockly.FieldNumber(0), 'SPEED')
                 .setAlign(Blockly.ALIGN_RIGHT);
             this.setOutput(true, 'waypoint_controls');
             this.setColour(80);
-            this.setTooltip('Set acceleration and speed for the waypoint.');
+            this.setTooltip('Set speed for the waypoint.');
         }
     };
-
-
-
 
     const workspace = Blockly.inject('blocklyDiv', {
         media: '../lib/blockly/media/',
@@ -169,34 +144,64 @@ document.addEventListener('DOMContentLoaded', function () {
         toolboxPosition: 'start',
     });
 
-
+    // Override indentation to handle it myself
+    Blockly.Python.INDENT = '';
 
     function generatePythonCode() {
         const code = python.pythonGenerator.workspaceToCode(workspace);
 
         // Add import statements and robot initialization
-        let pythonCode = 'import webots\n\n';
-        pythonCode += 'robot = webots.Robot()\n';
+        let pythonCode = 
+`import ikpy
+import json
+from ikpy.chain import Chain
+import numpy as np
+from controller import Robot
 
-        pythonCode += '\n';
+robot = Robot()
+timestep = int(robot.getBasicTimeStep())`;
 
         // Concatenate the generated Python code
         pythonCode += code;
-        document.getElementById('generated-code').innerText = pythonCode;
+        return pythonCode;
     }
 
     Blockly.Python['program_root'] = function (block) {
-        var motorCode = Blockly.Python.statementToCode(block, 'MOTORS');
+        const robot_name = block.getFieldValue('ROBOT_NAME');
+        // Initialize the robot and devices from the given name
+        let code =
+`# Open arm config
+with open('${robot_name}.json') as f:
+    config = json.load(f)
+
+# Create chain from URDF file and mask
+urdf_path = '${robot_name}.urdf'
+active_links_mask = config['active_links_mask']
+my_chain = Chain.from_urdf_file(urdf_path, active_links_mask=active_links_mask)
+
+# Initialize sensors and actuators lists
+position_sensors = []
+motors = []
+
+# Set up the sensors
+for sensor_name in config['position_sensors']:
+    sensor = robot.getDevice(sensor_name)
+    sensor.enable(timestep)
+    position_sensors.append(sensor)
+
+# Set up the motors
+for motor_name in config['motors']:
+    motor = robot.getDevice(motor_name)
+    motors.append(motor)
+    
+# Get the current positions from the sensors
+current_joint_positions = [sensor.getValue() for sensor in position_sensors]
+`;
         var mainCode = Blockly.Python.statementToCode(block, 'MAIN_PROGRAM');
-        var code = motorCode + mainCode;
+        code += mainCode;
         return code;
     };
 
-    Blockly.Python['motor_name'] = function (block) {
-        var motorName = block.getFieldValue('MOTOR_NAME');
-        var pythonCode = `motor_${motorName} = robot.getMotor("${motorName}")\n`;
-        return pythonCode;
-    };
 
     Blockly.Python['controls_repeat_custom'] = function (block) {
         const times = block.getFieldValue('TIMES');
@@ -207,14 +212,38 @@ document.addEventListener('DOMContentLoaded', function () {
 
     Blockly.Python['move'] = function (block) {
         const waypointsCode = Blockly.Python.statementToCode(block, 'WAYPOINT');
-        return waypointsCode;
+        const cleanedWaypointsCode = waypointsCode.replace(/,\s*$/, ""); // Remove trailing comma and whitespace
+
+        let code =
+`waypoints = [${cleanedWaypointsCode}]
+for target_position in waypoints:
+    # Define the target position for the end-effector (x, y, z)
+    new_position = target_position['coordinates']
+    target_position = np.array(new_position)
+
+    # Define an orientation for the end-effector (identity matrix assumuming no change in orientation)
+    target_orientation = np.eye(3)
+
+    # Perform inverse kinematics to compute the joint angles for the desired new position and orientation
+    new_joint_positions = my_chain.inverse_kinematics(target_position=target_position, target_orientation=target_orientation)
+
+    # Set the new joint positions on the motors
+    for idx, motor in enumerate(motors):
+        motor.setPosition(new_joint_positions[idx + 1])
+
+    # Step simulation to start moving the arm
+    robot.step(timestep)
+`;
+
+        return code;
     };
 
     Blockly.Python['waypoint'] = function (block) {
         const coordinatesCode = Blockly.Python.valueToCode(block, 'COORDINATES', Blockly.Python.ORDER_ATOMIC);
         const waypointControlsCode = Blockly.Python.valueToCode(block, 'WAYPOINT_CONTROLS', Blockly.Python.ORDER_ATOMIC);
 
-        const code = 'motor.setPosition(' + coordinatesCode + ')\n';
+        // let waypointcontrols decide if the entry for controls will exist for later error checking
+        let code = `{ 'coordinates': ${coordinatesCode}, ${waypointControlsCode} }, `;
 
         return code;
     };
@@ -224,27 +253,33 @@ document.addEventListener('DOMContentLoaded', function () {
         const y = block.getFieldValue('Y');
         const z = block.getFieldValue('Z');
 
-        return ['webots.Vector3(' + x + ', ' + y + ', ' + z + ')', Blockly.Python.ORDER_ATOMIC];
+        return ['[' + x + ', ' + y + ', ' + z + ']', Blockly.Python.ORDER_ATOMIC];
     };
 
     Blockly.Python['waypoint_control'] = function (block) {
-        const acceleration = block.getFieldValue('ACCELERATION');
         const speed = block.getFieldValue('SPEED');
 
-        return [`# Set acceleration and speed: Acceleration: ${acceleration}, Speed: ${speed}`, Blockly.Python.ORDER_ATOMIC];
+        // Only create an entry in the dictionary or speed is greater than 0
+        let controlsCode = '';
+        if (speed > 0) {
+            controlsCode += `'speed': ${speed}, `;
+        }
+
+        return controlsCode;
     };
 
 
     // Attach the code generation function to the button click event
-    document.getElementById('generateCodeButton').addEventListener('click', generatePythonCode);
+    document.getElementById('generateCodeButton').addEventListener('click', showGeneratedCode);
     document.getElementById('saveCodeButton').addEventListener('click', savePythonCodeToFile);
 
+    function showGeneratedCode() {
+        let pythonCode = generatePythonCode();
+        document.getElementById('generated-code').innerText = pythonCode;
+    }
+
     function savePythonCodeToFile() {
-        const code = python.pythonGenerator.workspaceToCode(workspace);
-        const pythonCode = 'import webots\n\n' +
-            'robot = webots.Robot()\n' +
-            'motor = robot.getMotor("motor_name")\n\n' +
-            code;
+        let pythonCode = generatePythonCode();
 
         const blob = new Blob([pythonCode], { type: 'text/plain' });
         const fileName = 'generated_code.py';
