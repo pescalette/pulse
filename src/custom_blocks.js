@@ -1,5 +1,7 @@
 document.addEventListener('DOMContentLoaded', function () {
     var move_block_index = 0;
+    var gripper_control_index = 0;
+    var sleep_index = 0;
 
 
     const toolbox = {
@@ -29,6 +31,10 @@ document.addEventListener('DOMContentLoaded', function () {
                         "kind": "block",
                         "type": "waypoint_control"
                     },
+                    {
+                        "kind": "block",
+                        "type": "gripper_control"
+                    },
                 ]
             },
             {
@@ -38,6 +44,10 @@ document.addEventListener('DOMContentLoaded', function () {
                     {
                         "kind": "block",
                         "type": "controls_repeat_custom"
+                    },
+                    {
+                        "kind": "block",
+                        "type": "sleep_block"
                     },
                 ]
             }
@@ -82,6 +92,19 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     };
 
+    Blockly.Blocks['sleep_block'] = {
+        init: function () {
+            this.appendDummyInput()
+                .appendField("Sleep for")
+                .appendField(new Blockly.FieldNumber(1, 0), "TIME")
+                .appendField("seconds");
+            this.setPreviousStatement(true, null);
+            this.setNextStatement(true, null);
+            this.setColour(120);
+            this.setTooltip('Delays further action for a specified number of seconds.');
+            this.setHelpUrl('');
+        }
+    };
 
     Blockly.Blocks['move'] = {
         init: function () {
@@ -143,6 +166,19 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     };
 
+    Blockly.Blocks['gripper_control'] = {
+        init: function () {
+            this.appendDummyInput()
+                .appendField("Gripper Control")
+                .appendField(new Blockly.FieldDropdown([["Open", "open"], ["Close", "close"]]), "ACTION");
+            this.setPreviousStatement(true, null);
+            this.setNextStatement(true, null);
+            this.setColour(160);
+            this.setTooltip('Control the gripper (open or close).');
+            this.setHelpUrl('');
+        }
+    };
+
     const workspace = Blockly.inject('blocklyDiv', {
         media: '../lib/blockly/media/',
         toolbox: toolbox,
@@ -159,6 +195,7 @@ document.addEventListener('DOMContentLoaded', function () {
         let pythonCode = 
 `import os
 import sys
+import time
 
 # Current script directory
 current_script_directory = os.path.dirname(os.path.abspath(__file__))
@@ -176,7 +213,10 @@ from collections import deque
 
         // Concatenate the generated Python code
         pythonCode += code;
+        // Reset indices
         move_block_index = 0
+        gripper_control_index = 0
+        sleep_index = 0
         return pythonCode;
     }
 
@@ -199,6 +239,7 @@ while execution_queue:
     if not instruction_complete:
         execution_queue.appendleft(instruction)
     controller.step_simulation()
+    time.sleep(0.001)
 `;
         if (program_loops) {
             code += 
@@ -218,6 +259,17 @@ while execution_queue:
         return `for i in range(${times}):\n${doCode}\n`;
     };
 
+    Blockly.Python['sleep_block'] = function (block) {
+        sleep_index += 1;
+        index = sleep_index;
+        var sleepTime = block.getFieldValue('TIME');
+        var code = 
+`sleep_${index} = instruction.Sleep(${sleepTime})
+execution_queue.append(sleep_${index})
+
+`;
+        return code;
+    };
 
     Blockly.Python['move'] = function (block) {
         move_block_index += 1
@@ -270,6 +322,18 @@ execution_queue.append(move_instruction_${index})
         }
 
         return [controlsCode, Blockly.Python.ORDER_ATOMIC];
+    };
+
+    Blockly.Python['gripper_control'] = function (block) {
+        gripper_control_index += 1;
+        const index = gripper_control_index;
+        const action = block.getFieldValue('ACTION');
+        code = 
+`gc_${index} = instruction.GripperControl('${action}')
+execution_queue.append(gc_${index})
+
+`;
+        return code;
     };
 
     function addIndentation(code, indentLevel) {

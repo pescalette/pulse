@@ -34,6 +34,7 @@ class RobotController:
         # Initialize sensors and actuators lists
         self.position_sensors = []
         self.motors = []
+        self.gripper_motors = []
         
         # Set up the sensors
         for sensor_name in config['position_sensors']:
@@ -42,9 +43,24 @@ class RobotController:
             self.position_sensors.append(sensor)
 
         # Set up the motors
-        for motor_name in config['motors']:
-            motor = self.robot.getDevice(motor_name)
-            self.motors.append(motor)    
+        for motor_info in config['motors']:
+            motor = Motor(
+                name=motor_info["name"], 
+                device=self.robot.getDevice(motor_info["name"]), 
+                motor_joint_max=motor_info.get("motor_joint_max"),  
+                motor_joint_min=motor_info.get("motor_joint_min")   
+            )
+            self.motors.append(motor)
+
+        # Set up the gripper motors
+        for motor_info in config['gripper_motors']:
+            motor = Motor(
+                name=motor_info["name"], 
+                device=self.robot.getDevice(motor_info["name"]), 
+                motor_joint_max=motor_info.get("motor_joint_max"),  
+                motor_joint_min=motor_info.get("motor_joint_min")   
+            )
+            self.gripper_motors.append(motor)
 
     def get_current_position(self):
         # Get the current positions from the sensors
@@ -66,3 +82,13 @@ class RobotController:
             return self.robot.step(self.timestep)
         elif self.state == State.PAUSED:
             pass
+
+class Motor:
+    def __init__(self, name, device, motor_joint_max, motor_joint_min):
+        self.name = name
+        self.device = device
+        self.joint_max = motor_joint_max
+        self.joint_min = motor_joint_min
+        
+    def get_motor_limits(self):
+        return self.joint_min, self.joint_max

@@ -1,6 +1,5 @@
 import numpy as np
-from functools import partial
-from . import _controller
+import time
 
 class Instruction:
     def __init__(self, name):
@@ -55,7 +54,7 @@ class Move(Instruction):
                 return False
             
             for idx, motor in enumerate(controller.motors):
-                motor.setPosition(self.target_joint_positions[idx + 1])
+                motor.device.setPosition(self.target_joint_positions[idx + 1])
         else:
             if self.robot_startup_delay > 0:
                 # If the delay is set, decrement it and do not check movement yet
@@ -81,3 +80,32 @@ class Waypoint():
         self.z = coords[2]
         self.coords = coords
         self.speed = speed
+
+# This runs asynchronously which mimics the interaction of robotiq grippers on a universal robot
+class GripperControl(Instruction):
+    def __init__(self, action, name=""):
+        super().__init__(name)
+        self.action = action
+    
+    def execute(self, controller):
+        for motor in controller.gripper_motors:
+            position = motor.joint_max if self.action == "close" else motor.joint_min
+            motor.device.setPosition(position)
+        return True
+    
+class Sleep(Instruction):
+    def __init__(self, time_to_sleep, name=""):
+        super().__init__(name)
+        self.time_to_sleep = time_to_sleep
+        self.start_time = None
+
+    def execute(self, controller):
+        current_time = time.monotonic()
+        if self.start_time is None:
+            self.start_time = current_time
+        
+        if current_time - self.start_time >= self.time_to_sleep:
+            # Sleep duration has passed
+            return True 
+        return False
+    
