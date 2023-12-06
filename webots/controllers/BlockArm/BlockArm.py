@@ -1,51 +1,52 @@
-import ikpy
-import json
-from ikpy.chain import Chain
-import numpy as np
-from controller import Robot
+import os
+import sys
 
-robot = Robot()
-timestep = int(robot.getBasicTimeStep())# Open arm config
-with open('BlockArm.json') as f:
-    config = json.load(f)
+# Current script directory
+current_script_directory = os.path.dirname(os.path.abspath(__file__))
+# Path to the 'controllers' folder
+controllers_directory = os.path.abspath(os.path.join(current_script_directory, os.pardir))
 
-# Create chain from URDF file and mask
-urdf_path = 'BlockArm.urdf'
-active_links_mask = config['active_links_mask']
-my_chain = Chain.from_urdf_file(urdf_path, active_links_mask=active_links_mask)
+# Add 'controllers' directory to sys.path
+if controllers_directory not in sys.path:
+    sys.path.append(controllers_directory)
 
-# Initialize sensors and actuators lists
-position_sensors = []
-motors = []
+from robot_control import instruction, _controller
+from collections import deque
 
-# Set up the sensors
-for sensor_name in config['position_sensors']:
-    sensor = robot.getDevice(sensor_name)
-    sensor.enable(timestep)
-    position_sensors.append(sensor)
+controller = _controller.RobotController('BlockArm')
+execution_queue = deque()
 
-# Set up the motors
-for motor_name in config['motors']:
-    motor = robot.getDevice(motor_name)
-    motors.append(motor)
+move_instruction_1 = instruction.Move("move1")
+waypoints_1 = [{ 'coordinates': [1, 0, 0],  }, { 'coordinates': [0, 1, 0],  }]
+for waypoint in waypoints_1:
+    wp_options = {'coords': waypoint['coordinates']}
+    if 'speed' in waypoint:
+        wp_options['speed'] = waypoint['speed']
+    wp = instruction.Waypoint(**wp_options)
 
-# Get the current positions from the sensors
-current_joint_positions = [sensor.getValue() for sensor in position_sensors]
-waypoints = [{ 'coordinates': [0, 0, 0], }]
-for target_position in waypoints:
-    # Define the target position for the end-effector (x, y, z)
-    new_position = target_position['coordinates']
-    target_position = np.array(new_position)
+    move_instruction_1.add_waypoint(wp)
 
-    # Define an orientation for the end-effector (identity matrix assumuming no change in orientation)
-    target_orientation = np.eye(3)
+execution_queue.append(move_instruction_1)
 
-    # Perform inverse kinematics to compute the joint angles for the desired new position and orientation
-    new_joint_positions = my_chain.inverse_kinematics(target_position=target_position, target_orientation=target_orientation)
+for i in range(2):
+    move_instruction_2 = instruction.Move("move2")
+    waypoints_2 = [{ 'coordinates': [1, 0, 0],  }, { 'coordinates': [0, 0, 1],  }]
+    for waypoint in waypoints_2:
+        wp_options = {'coords': waypoint['coordinates']}
+        if 'speed' in waypoint:
+            wp_options['speed'] = waypoint['speed']
+        wp = instruction.Waypoint(**wp_options)
 
-    # Set the new joint positions on the motors
-    for idx, motor in enumerate(motors):
-        motor.setPosition(new_joint_positions[idx + 1])
+        move_instruction_2.add_waypoint(wp)
 
-    # Step simulation to start moving the arm
-    robot.step(timestep)
+    execution_queue.append(move_instruction_2)
+
+
+
+while execution_queue:
+    instruction = execution_queue.popleft()
+    instruction_complete = instruction.execute(controller)
+    if not instruction_complete:
+        execution_queue.appendleft(instruction)
+    controller.step_simulation()
+    execution_queue.append(instruction)

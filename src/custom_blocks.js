@@ -1,4 +1,5 @@
 document.addEventListener('DOMContentLoaded', function () {
+    var move_block_index = 0;
 
 
     const toolbox = {
@@ -55,7 +56,11 @@ document.addEventListener('DOMContentLoaded', function () {
                 .appendField('Main Program');
             this.setColour(160);
             this.setTooltip('Root block for the program');
-            this.setHelpUrl('');        }
+            this.setHelpUrl('');
+            this.appendDummyInput()
+                .appendField('Program Loops Infinitely')
+                .appendField(new Blockly.FieldCheckbox(), "PROGRAM_DOES_LOOP")
+        }
     };
 
 
@@ -63,7 +68,7 @@ document.addEventListener('DOMContentLoaded', function () {
         init: function () {
             this.appendDummyInput()
                 .appendField("Repeat")
-                .appendField(new Blockly.FieldNumber(0), "TIMES")
+                .appendField(new Blockly.FieldNumber(1), "TIMES")
                 .appendField("times");
             this.appendStatementInput("DO")
                 .appendField("Do:")
@@ -152,89 +157,88 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // Add import statements and robot initialization
         let pythonCode = 
-`import ikpy
-import json
-from ikpy.chain import Chain
-import numpy as np
-from controller import Robot
+`import os
+import sys
 
-robot = Robot()
-timestep = int(robot.getBasicTimeStep())`;
+# Current script directory
+current_script_directory = os.path.dirname(os.path.abspath(__file__))
+# Path to the 'controllers' folder
+controllers_directory = os.path.abspath(os.path.join(current_script_directory, os.pardir))
+
+# Add 'controllers' directory to sys.path
+if controllers_directory not in sys.path:
+    sys.path.append(controllers_directory)
+
+from robot_control import instruction, _controller
+from collections import deque
+
+`;
 
         // Concatenate the generated Python code
         pythonCode += code;
+        move_block_index = 0
         return pythonCode;
     }
 
     Blockly.Python['program_root'] = function (block) {
         const robot_name = block.getFieldValue('ROBOT_NAME');
+        const program_loops = block.getFieldValue('PROGRAM_DOES_LOOP') === 'TRUE';
         // Initialize the robot and devices from the given name
         let code =
-`# Open arm config
-with open('${robot_name}.json') as f:
-    config = json.load(f)
+`controller = _controller.RobotController('${robot_name}')
+execution_queue = deque()
 
-# Create chain from URDF file and mask
-urdf_path = '${robot_name}.urdf'
-active_links_mask = config['active_links_mask']
-my_chain = Chain.from_urdf_file(urdf_path, active_links_mask=active_links_mask)
-
-# Initialize sensors and actuators lists
-position_sensors = []
-motors = []
-
-# Set up the sensors
-for sensor_name in config['position_sensors']:
-    sensor = robot.getDevice(sensor_name)
-    sensor.enable(timestep)
-    position_sensors.append(sensor)
-
-# Set up the motors
-for motor_name in config['motors']:
-    motor = robot.getDevice(motor_name)
-    motors.append(motor)
-    
-# Get the current positions from the sensors
-current_joint_positions = [sensor.getValue() for sensor in position_sensors]
 `;
         var mainCode = Blockly.Python.statementToCode(block, 'MAIN_PROGRAM');
         code += mainCode;
+        code += 
+`
+while execution_queue:
+    instruction = execution_queue.popleft()
+    instruction_complete = instruction.execute(controller)
+    if not instruction_complete:
+        execution_queue.appendleft(instruction)
+    controller.step_simulation()
+`;
+        if (program_loops) {
+            code += 
+`    execution_queue.append(instruction)
+`;  // End of circular execution loop
+        }
+
         return code;
     };
 
 
     Blockly.Python['controls_repeat_custom'] = function (block) {
         const times = block.getFieldValue('TIMES');
-        const doCode = Blockly.Python.statementToCode(block, 'DO');
+        let doCode = Blockly.Python.statementToCode(block, 'DO');
+        doCode = addIndentation(doCode, 1);
 
         return `for i in range(${times}):\n${doCode}\n`;
     };
 
+
     Blockly.Python['move'] = function (block) {
+        move_block_index += 1
+        const index = move_block_index
         const waypointsCode = Blockly.Python.statementToCode(block, 'WAYPOINT');
         const cleanedWaypointsCode = waypointsCode.replace(/,\s*$/, ""); // Remove trailing comma and whitespace
-
         let code =
-`waypoints = [${cleanedWaypointsCode}]
-for target_position in waypoints:
-    # Define the target position for the end-effector (x, y, z)
-    new_position = target_position['coordinates']
-    target_position = np.array(new_position)
+`move_instruction_${index} = instruction.Move("move${index}")
+waypoints_${index} = [${cleanedWaypointsCode}]
+for waypoint in waypoints_${index}:
+    wp_options = {'coords': waypoint['coordinates']}
+    if 'speed' in waypoint:
+        wp_options['speed'] = waypoint['speed']
+    wp = instruction.Waypoint(**wp_options)
 
-    # Define an orientation for the end-effector (identity matrix assumuming no change in orientation)
-    target_orientation = np.eye(3)
+    move_instruction_${index}.add_waypoint(wp)
 
-    # Perform inverse kinematics to compute the joint angles for the desired new position and orientation
-    new_joint_positions = my_chain.inverse_kinematics(target_position=target_position, target_orientation=target_orientation)
+execution_queue.append(move_instruction_${index})
 
-    # Set the new joint positions on the motors
-    for idx, motor in enumerate(motors):
-        motor.setPosition(new_joint_positions[idx + 1])
-
-    # Step simulation to start moving the arm
-    robot.step(timestep)
 `;
-
+    
         return code;
     };
 
@@ -265,9 +269,15 @@ for target_position in waypoints:
             controlsCode += `'speed': ${speed}, `;
         }
 
-        return controlsCode;
+        return [controlsCode, Blockly.Python.ORDER_ATOMIC];
     };
 
+    function addIndentation(code, indentLevel) {
+        const indent = '    '; 
+        const lines = code.split('\n');
+        const indentedLines = lines.map(line => line ? indent.repeat(indentLevel) + line : line); 
+        return indentedLines.join('\n');
+    }
 
     // Attach the code generation function to the button click event
     document.getElementById('generateCodeButton').addEventListener('click', showGeneratedCode);
