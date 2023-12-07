@@ -3,6 +3,27 @@ document.addEventListener('DOMContentLoaded', function () {
     var gripper_control_index = 0;
     var sleep_index = 0;
 
+    const socket = new WebSocket('ws://localhost:8765');
+
+    // Connection opened
+    socket.addEventListener('open', function (event) {
+        console.log('Connected to the WebSocket server');
+    });
+
+    // Listen for messages
+    socket.addEventListener('message', function (event) {
+        const received_msg = event.data;
+        console.log('Message from server:', received_msg);
+    });
+
+    function sendMessage(message) {
+        if (socket.readyState === WebSocket.OPEN) {
+            socket.send(message);
+        } else {
+            console.error('WebSocket is not open. Cannot send message.');
+        }
+    }
+
 
     const toolbox = {
         "kind": "categoryToolbox",
@@ -119,6 +140,23 @@ document.addEventListener('DOMContentLoaded', function () {
             this.setTooltip('Moves the robot through the inserted waypoints');
         }
     };
+ 
+    Blockly.Blocks['serialized_waypoint'] = {
+        init: function () {
+            this.appendDummyInput()
+                .appendField("Waypoint");
+            this.appendValueInput('COORDINATES')
+                .setCheck('waypoint_destination')
+                .appendField('Coordinates to move to:');
+            this.appendValueInput('WAYPOINT_CONTROLS')
+                .setCheck('waypoint_controls')
+                .appendField('Optional Speed Parameters:');
+            this.setPreviousStatement(true, 'waypoint');
+            this.setNextStatement(true, 'waypoint');
+            this.setColour(60);
+            this.setTooltip('Create a waypoint with X, Y, and Z coordinates and optional control blocks.');
+        }
+    };
 
     Blockly.Blocks['waypoint'] = {
         init: function () {
@@ -206,7 +244,7 @@ controllers_directory = os.path.abspath(os.path.join(current_script_directory, o
 if controllers_directory not in sys.path:
     sys.path.append(controllers_directory)
 
-from robot_control import instruction, _controller
+from robot_control import instruction, _controller, gui
 from collections import deque
 
 `;
@@ -228,24 +266,32 @@ from collections import deque
 `controller = _controller.RobotController('${robot_name}')
 execution_queue = deque()
 
+gui = gui.RobotGUI(controller)
+gui.start_thread()
+
 `;
         var mainCode = Blockly.Python.statementToCode(block, 'MAIN_PROGRAM');
         code += mainCode;
         code += 
 `
-while execution_queue:
-    instruction = execution_queue.popleft()
-    instruction_complete = instruction.execute(controller)
-    if not instruction_complete:
-        execution_queue.appendleft(instruction)
-    controller.step_simulation()
-    time.sleep(0.001)
+while controller.robot.step(controller.timestep) != -1:
+    while execution_queue and controller.state == _controller.State.PLAYING:
+        instruction = execution_queue.popleft()
+        instruction_complete = instruction.execute(controller)
+        if not instruction_complete:
+            execution_queue.appendleft(instruction)
+        controller.step_simulation()
 `;
         if (program_loops) {
             code += 
-`    execution_queue.append(instruction)
+`   else:
+        execution_queue.append(instruction)
 `;  // End of circular execution loop
         }
+        code +=
+`    time.sleep(0.001)
+
+`
 
         return code;
     };

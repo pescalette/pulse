@@ -17,26 +17,35 @@ from collections import deque
 controller = _controller.RobotController('BlockArm')
 execution_queue = deque()
 
-sleep_1 = instruction.Sleep(1)
-execution_queue.append(sleep_1)
+gui = gui.RobotGUI(controller)
+gui.start_thread()
+
+move_instruction_1 = instruction.Move("move1")
+waypoints_1 = [{ 'coordinates': [.4, .4, .4],  }, { 'coordinates': [.2, .2, .2],  }, { 'coordinates': [.25, .25, .25],  }, { 'coordinates': [.25, .25, .4],  }]
+for waypoint in waypoints_1:
+    wp_options = {'coords': waypoint['coordinates']}
+    if 'speed' in waypoint:
+        wp_options['speed'] = waypoint['speed']
+    wp = instruction.Waypoint(**wp_options)
+
+    move_instruction_1.add_waypoint(wp)
+
+execution_queue.append(move_instruction_1)
 
 gc_1 = instruction.GripperControl('close')
 execution_queue.append(gc_1)
 
-sleep_2 = instruction.Sleep(1)
-execution_queue.append(sleep_2)
+sleep_1 = instruction.Sleep(1)
+execution_queue.append(sleep_1)
 
-gc_2 = instruction.GripperControl('open')
-execution_queue.append(gc_2)
 
-gui = gui.RobotGUI()
-gui.start_thread()
-
-while execution_queue:
-    instruction = execution_queue.popleft()
-    instruction_complete = instruction.execute(controller)
-    if not instruction_complete:
-        execution_queue.appendleft(instruction)
-    controller.step_simulation()
+while controller.robot.step(controller.timestep) != -1:
+    while execution_queue and controller.state == _controller.State.PLAYING:
+        instruction = execution_queue.popleft()
+        instruction_complete = instruction.execute(controller)
+        if not instruction_complete:
+            execution_queue.appendleft(instruction)
+        controller.step_simulation()
     time.sleep(0.001)
-    execution_queue.append(instruction)
+    gui.window.update_idletasks()
+    gui.window.update()

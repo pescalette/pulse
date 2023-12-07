@@ -1,49 +1,69 @@
 {
-  "motors": [
-      {
-          "name": "base_motor",
-          "motor_joint_max": null,
-          "motor_joint_min": null
-      },
-      {
-          "name": "shoulder_motor",
-          "motor_joint_max": null,
-          "motor_joint_min": null
-      },
-      {
-          "name": "elbow_motor",
-          "motor_joint_max": null,
-          "motor_joint_min": null
-      },
-      {
-          "name": "forearm_motor",
-          "motor_joint_max": null,
-          "motor_joint_min": null
-      },
-      {
-          "name": "wrist_motor",
-          "motor_joint_max": null,
-          "motor_joint_min": null
-      }
-  ],
-  "gripper_motors": [
-      {
-          "name": "ROBOTIQ 2F-140 Gripper::left finger joint",
-          "motor_joint_max": 0.7,
-          "motor_joint_min": 0
-      },
-      {
-          "name": "ROBOTIQ 2F-140 Gripper::right finger joint",
-          "motor_joint_max": 0.7,
-          "motor_joint_min": 0
-      }
-  ],
-  "position_sensors": [
-      "base_motor_ps",
-      "shoulder_motor_ps",
-      "elbow_motor_ps",
-      "forearm_motor_ps",
-      "wrist_motor_ps"
-  ],
-  "active_links_mask": [false, true, true, false, true, false, true, false, true, false, false, true]
+    "motors": [
+        {
+            "name": "base_motor",
+            "motor_joint_max": null,
+            "motor_joint_min": null
+        },
+        {
+            "name": "shoulder_motor",
+            "motor_joint_max": null,
+            "motor_joint_min": null
+        },
+        {
+            "name": "elbow_motor",
+            "motor_joint_max": null,
+            "motor_joint_min": null
+        },
+        {
+            "name": "forearm_motor",
+            "motor_joint_max": null,
+            "motor_joint_min": null
+        },
+        {
+            "name": "wrist_motor",
+            "motor_joint_max": null,
+            "motor_joint_min": null
+        },
+        {
+            "name": "wrist2_motor",
+            "motor_joint_max": null,
+            "motor_joint_min": null
+        }
+    ],
+    "gripper_motors": [
+        {
+            "name": "ROBOTIQ 2F-140 Gripper::left finger joint",
+            "motor_joint_max": 0.7,
+            "motor_joint_min": 0
+        },
+        {
+            "name": "ROBOTIQ 2F-140 Gripper::right finger joint",
+            "motor_joint_max": 0.7,
+            "motor_joint_min": 0
+        }
+    ],
+    "position_sensors": [
+        "base_motor_ps",
+        "shoulder_motor_ps",
+        "elbow_motor_ps",
+        "forearm_motor_ps",
+        "wrist_motor_ps",
+        "wrist2_motor_ps"
+    ],
+    "active_links_mask": [
+        false,
+        true,
+        true,
+        false,
+        true,
+        false,
+        true,
+        false,
+        true,
+        false,
+        true,
+        false,
+        true
+    ]
 }

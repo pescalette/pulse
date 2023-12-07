@@ -2,12 +2,18 @@ import json
 import ikpy
 from ikpy.chain import Chain
 import numpy as np
+from transforms3d import _gohlketransforms as transformations
+from transforms3d.euler import mat2euler
 from controller import Robot
 from enum import Enum
+import time
+import server
 
 class State(Enum):
     PAUSED = 0
     PLAYING = 1
+    PROGRAM = 2
+    STOPPED = 3
 
 
 class RobotController:
@@ -18,6 +24,7 @@ class RobotController:
         self.timestep = int(self.robot.getBasicTimeStep())
         self.state = State.PLAYING
         self.initialize_robot()
+        server.run_in_thread()
     
     # Set up sensors and actuators based on the configuration
     def initialize_robot(self):
@@ -30,6 +37,9 @@ class RobotController:
 
         self.gps = self.robot.getDevice('gps')
         self.gps.enable(self.timestep)
+
+        self.imu = self.robot.getDevice('imu')
+        self.imu.enable(self.timestep)
 
         # Initialize sensors and actuators lists
         self.position_sensors = []
@@ -63,11 +73,35 @@ class RobotController:
             self.gripper_motors.append(motor)
 
     def get_current_position(self):
-        # Get the current positions from the sensors
+        # Get the current joint positions from the sensors
         return [sensor.getValue() for sensor in self.position_sensors]
     
     def get_gps_position(self):
+        if self.gps is None:
+            print("GPS device not initialized")
+            return None
+        
+        # Run one simulation step to ensure sensors are updated
+        self.robot.step(self.timestep)
+        
         return self.gps.getValues()
+
+    def get_orientation_quaternion(self):
+        if self.imu is None:
+            print("Inertial Unit not initialized")
+            return None
+        self.robot.step(self.timestep)
+        return self.imu.getQuaternion()
+    
+    def get_orientation_matrix(self):
+        orientation = self.get_orientation_quaternion()
+        if orientation is not None:
+            # Get a 4x4 transformation matrix from quaternion
+            rotation_matrix_4x4 = transformations.quaternion_matrix(orientation)
+            # Extract the upper-left 3x3 rotation matrix
+            rotation_matrix_3x3 = rotation_matrix_4x4[:3, :3]
+            return rotation_matrix_3x3
+        return None
 
     def play(self):
         self.state = State.PLAYING
@@ -82,6 +116,34 @@ class RobotController:
             return self.robot.step(self.timestep)
         elif self.state == State.PAUSED:
             pass
+        elif self.state == State.PROGRAM:
+            pass
+        elif self.state == State.STOPPED:
+            pass
+
+    def move_motor(self, motor, direction, angle_increment=0.1):
+        direction_multiplier = 1 if direction == 'positive' else -1
+
+        # Retrieve the current position of the motor
+        current_position = motor.device.getTargetPosition()
+        # Calculate the new target position
+        new_position = current_position + (angle_increment * direction_multiplier)
+
+        # Command the motor to move to the new position
+        motor.device.setPosition(new_position)
+
+    def serialize_position(self):
+        motor_positions = {}
+        for motor in self.motors:
+            motor_positions[motor.name] = motor.device.getTargetPosition()
+
+        return json.dumps(motor_positions)
+    
+    def send_serialized_waypoint(self, message):
+        server.send_message(message)
+
+
+
 
 class Motor:
     def __init__(self, name, device, motor_joint_max, motor_joint_min):

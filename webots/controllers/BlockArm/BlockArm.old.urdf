@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<robot name="D:/school/CPSC_Courses/CPSC_354/pulse/webots/controllers/BlockArm/Robot.urdf" xmlns:xacro="http://ros.org/wiki/xacro">
+<robot name="D:/school/CPSC_Courses/CPSC_354/pulse/webots/controllers/test2/arm1.urdf" xmlns:xacro="http://ros.org/wiki/xacro">
   <link name="base_link">
     <visual>
       <geometry>
@@ -32,7 +32,7 @@
   </link>
   <link name="solid_0">
   </link>
-  <joint name="solid(1)_solid_0_joint" type="fixed">
+  <joint name="solid(1)_solid_0_joint" type="fixed" inactive="1">
     <parent link="solid(1)"/>
     <child link="solid_0"/>
     <origin xyz="0.03 0 0.12" rpy="0 0 0"/>
@@ -48,7 +48,7 @@
   </link>
   <link name="solid_2">
   </link>
-  <joint name="solid_1_solid_2_joint" type="fixed">
+  <joint name="solid_1_solid_2_joint" type="fixed" inactive="1">
     <parent link="solid_1"/>
     <child link="solid_2"/>
     <origin xyz="-0.03 0 0.075" rpy="0 0 0"/>
@@ -74,7 +74,7 @@
       </geometry>
     </collision>
   </link>
-  <joint name="solid_3_solid_4_joint" type="fixed">
+  <joint name="solid_3_solid_4_joint" type="fixed" inactive="1">
     <parent link="solid_3"/>
     <child link="solid_4"/>
     <origin xyz="0.03 0 0.05" rpy="0 0 0"/>
@@ -82,7 +82,7 @@
   <joint name="wrist_motor" type="revolute">
     <parent link="solid_4"/>
     <child link="solid_5"/>
-    <axis xyz="1 0 0"/>
+    <axis xyz="0 0 1"/>
     <limit effort="10" lower="-3.14159" upper="3.14159" velocity="10"/>
     <origin xyz="0 0 0.08" rpy="0 0 0"/>
   </joint>
@@ -90,62 +90,51 @@
   </link>
   <link name="solid_6">
     <visual>
-      <origin xyz="-0.03 0 -0.03" rpy="0 0 0"/>
       <geometry>
-        <box size="0.05 0.05 0.1"/>
+        <box size="0.05 0.05 0.05"/>
       </geometry>
     </visual>
     <collision>
-      <origin xyz="-0.03 0 -0.03" rpy="0 0 0"/>
       <geometry>
-        <box size="0.05 0.05 0.1"/>
+        <box size="0.05 0.05 0.05"/>
       </geometry>
     </collision>
   </link>
-  <joint name="solid_5_solid_6_joint" type="fixed">
+  <joint name="solid_5_solid_6_joint" type="fixed" inactive="1">
     <parent link="solid_5"/>
     <child link="solid_6"/>
-    <origin xyz="-0.06 0 0" rpy="0 0 0"/>
+    <origin xyz="0 0 0.03" rpy="0 0 0"/>
   </joint>
-  <joint name="wrist2_motor" type="revolute">
-    <parent link="solid_6"/>
-    <child link="solid_7"/>
-    <axis xyz="1 0 0"/>
-    <limit effort="10" lower="-3.14" upper="3.14" velocity="10"/>
-    <origin xyz="0 0 0" rpy="0 0 0"/>
-  </joint>
-  <link name="solid_7">
-  </link>
   <link name="ROBOTIQ 2F-140 Gripper">
     <visual>
-      <origin xyz="0 0 0.073" rpy="0 0 0"/>
+      <origin xyz="0 0 0.018" rpy="0 0 0"/>
       <geometry>
         <cylinder radius="0.0375" length="0.036"/>
       </geometry>
     </visual>
     <collision>
-      <origin xyz="0 0 0.073" rpy="0 0 0"/>
+      <origin xyz="0 0 0.018" rpy="0 0 0"/>
       <geometry>
         <cylinder radius="0.0375" length="0.036"/>
       </geometry>
     </collision>
     <visual>
-      <origin xyz="0 0 0.11" rpy="3.141593 1.570793 3.141593"/>
+      <origin xyz="0 0 0.055" rpy="3.141593 1.570793 3.141593"/>
       <geometry>
         <cylinder radius="0.04" length="0.023"/>
       </geometry>
     </visual>
     <collision>
-      <origin xyz="0 0 0.11" rpy="3.141593 1.570793 3.141593"/>
+      <origin xyz="0 0 0.055" rpy="3.141593 1.570793 3.141593"/>
       <geometry>
         <cylinder radius="0.04" length="0.023"/>
       </geometry>
     </collision>
   </link>
-  <joint name="solid_7_ROBOTIQ 2F-140 Gripper_joint" type="fixed">
-    <parent link="solid_7"/>
+  <joint name="solid_6_ROBOTIQ 2F-140 Gripper_joint" type="fixed" inactive="1">
+    <parent link="solid_6"/>
     <child link="ROBOTIQ 2F-140 Gripper"/>
-    <origin xyz="0 0 0.055" rpy="0 0 0"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
   </joint>
   <joint name="hingejoint" type="revolute">
     <parent link="ROBOTIQ 2F-140 Gripper"/>
@@ -298,12 +287,12 @@
       </geometry>
     </collision>
   </link>
-  <joint name="right outer knuckle_right outer finger_joint" type="fixed">
+  <joint name="right outer knuckle_right outer finger_joint" type="fixed" inactive="1">
     <parent link="right outer knuckle"/>
     <child link="right outer finger"/>
     <origin xyz="0 0.01822 0.026002" rpy="0 0 0"/>
   </joint>
-  <joint name="hingejoint_8" type="revolute">
+  <joint name="hingejoint_7" type="revolute">
     <parent link="right outer finger"/>
     <child link="ROBOTIQ 2F-140 Gripper right inner finger"/>
     <axis xyz="1 0 0"/>
@@ -337,12 +326,12 @@
   </link>
   <link name="right inner finger pad">
   </link>
-  <joint name="ROBOTIQ 2F-140 Gripper right inner finger_right inner finger pad_joint" type="fixed">
+  <joint name="ROBOTIQ 2F-140 Gripper right inner finger_right inner finger pad_joint" type="fixed" inactive="1">
     <parent link="ROBOTIQ 2F-140 Gripper right inner finger"/>
     <child link="right inner finger pad"/>
     <origin xyz="0 0.045768 -0.027235" rpy="-0.01 0 0"/>
   </joint>
-  <joint name="hingejoint_9" type="revolute">
+  <joint name="hingejoint_8" type="revolute">
     <parent link="ROBOTIQ 2F-140 Gripper"/>
     <child link="left inner knuckle"/>
     <axis xyz="1 0 0"/>
@@ -493,12 +482,12 @@
       </geometry>
     </collision>
   </link>
-  <joint name="left outer knuckle_left outer finger_joint" type="fixed">
+  <joint name="left outer knuckle_left outer finger_joint" type="fixed" inactive="1">
     <parent link="left outer knuckle"/>
     <child link="left outer finger"/>
     <origin xyz="0 0.01822 0.026002" rpy="0 0 0"/>
   </joint>
-  <joint name="hingejoint_10" type="revolute">
+  <joint name="hingejoint_9" type="revolute">
     <parent link="left outer finger"/>
     <child link="ROBOTIQ 2F-140 Gripper left inner finger"/>
     <axis xyz="1 0 0"/>
@@ -532,23 +521,9 @@
   </link>
   <link name="left inner finger pad">
   </link>
-  <joint name="ROBOTIQ 2F-140 Gripper left inner finger_left inner finger pad_joint" type="fixed">
+  <joint name="ROBOTIQ 2F-140 Gripper left inner finger_left inner finger pad_joint" type="fixed" inactive="1">
     <parent link="ROBOTIQ 2F-140 Gripper left inner finger"/>
     <child link="left inner finger pad"/>
     <origin xyz="0 0.045755 -0.02722" rpy="-0.01 0 0"/>
-  </joint>
-  <link name="inertial unit">
-  </link>
-  <joint name="ROBOTIQ 2F-140 Gripper_inertial unit_joint" type="fixed">
-    <parent link="ROBOTIQ 2F-140 Gripper"/>
-    <child link="inertial unit"/>
-    <origin xyz="0 0 0" rpy="0 0 0"/>
-  </joint>
-  <link name="gps">
-  </link>
-  <joint name="base_link_gps_joint" type="fixed">
-    <parent link="base_link"/>
-    <child link="gps"/>
-    <origin xyz="0 0 0" rpy="0 0 0"/>
   </joint>
 </robot>
